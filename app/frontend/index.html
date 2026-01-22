@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AutoScale Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background-color: #f5f6fa;
+    }
+
+    header {
+      background: #0a2540;
+      color: white;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 24px;
+    }
+
+    header span {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    main {
+      padding: 32px;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .product {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product img {
+      height: 160px;
+      object-fit: cover;
+      margin-bottom: 12px;
+      border-radius: 4px;
+    }
+
+    .product h3 {
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .product p {
+      font-size: 14px;
+      color: #555;
+      flex-grow: 1;
+    }
+
+    .product button {
+      margin-top: 12px;
+      padding: 10px;
+      border: none;
+      background: #0a2540;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .product button:hover {
+      background: #133d6f;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #777;
+      font-size: 13px;
+    }
+
+    .cart {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #0a2540;
+      color: white;
+      padding: 14px 18px;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🛒 AutoScale Shop</h1>
+    <span>Powered by Kubernetes & CI/CD</span>
+  </header>
+
+  <main>
+    <h2 style="margin-bottom: 20px;">Featured Products</h2>
+    <div class="products" id="product-list"></div>
+  </main>
+
+  <div class="cart" onclick="viewCart()">
+    Cart (<span id="cart-count">0</span>)
+  </div>
+
+  <footer>
+    © 2026 AutoScale Shop | Built for DevOps Demo
+  </footer>
+
+  <script>
+    const API_BASE = "/api"; // backend service URL (K8s service)
+
+    let cartCount = 0;
+
+    async function loadProducts() {
+      try {
+        const res = await fetch(`${API_BASE}/products`);
+        const products = await res.json();
+
+        const container = document.getElementById("product-list");
+        container.innerHTML = "";
+
+        products.forEach(product => {
+          const div = document.createElement("div");
+          div.className = "product";
+
+          div.innerHTML = `
+            <img src="${product.image}" alt="${product.name}">
+            <h3>${product.name}</h3>
+            <p>${product.description}</p>
+            <strong>₹${product.price}</strong>
+            <button onclick="addToCart('${product.id}')">Add to Cart</button>
+          `;
+
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error("Failed to load products", err);
+      }
+    }
+
+    async function addToCart(productId) {
+      try {
+        await fetch(`${API_BASE}/cart`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: productId })
+        });
+
+        cartCount++;
+        document.getElementById("cart-count").innerText = cartCount;
+      } catch (err) {
+        console.error("Add to cart failed", err);
+      }
+    }
+
+    function viewCart() {
+      alert("Cart service is running on backend 🚀");
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
