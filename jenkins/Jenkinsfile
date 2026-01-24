@@ -7,15 +7,16 @@ pipeline {
         // Docker Hub credentials
         DOCKER_HUB_TOKEN = credentials("docker_hub_token")
         // Docker image name
-        BACKEND_IMAGE = "ecommerce-backend"
-        FRONTEND_IMAGE = "ecommerce-frontend"
+        BACKEND_IMAGE = "sachinn9700/ecommerce-backend"
+        FRONTEND_IMAGE = "sachinn9700/ecommerce-frontend"
         TAG = "v1"
     }
-    stage('Checkout Code') {
-        steps { 
-            git branch: 'main',
-            url: "${GIT_REPO_URL}"
-    }
+    stages {
+        stage('Checkout Code') {
+            steps { 
+                git branch: 'main', url: "${GIT_REPO_URL}"
+            }
+        }
         stage('Build Backend Image') {
             steps {
                 sh "docker build -t ${BACKEND_IMAGE}:${TAG} app/backend"
