@@ -17,11 +17,10 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: sachinbashetti/frontend:latest 
+        image: sachinn9700/ecommerce-frontend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 80
-
         livenessProbe:
           httpGet:
             path: /

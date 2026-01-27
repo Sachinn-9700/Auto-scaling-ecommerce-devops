@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PATH = "$PATH:/usr/local/bin/"
+        PATH = "$PATH:/usr/bin/"
 
         // Git repository URL
         GIT_REPO_URL = "https://github.com/Sachinn-9700/Auto-scaling-ecommerce-devops.git"
