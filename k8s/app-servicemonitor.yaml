@@ -13,7 +13,8 @@ spec:
     matchNames:
       - ecommerce
   endpoints:
-    - port: http
+    - port: http          
       path: /metrics
       interval: 15s
-      scrapeTimeout: 10s    
+      scrapeTimeout: 10s
+      scheme: http

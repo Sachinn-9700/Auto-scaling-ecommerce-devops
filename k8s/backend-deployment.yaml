@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+  namespace: ecommerce
   labels:
     app: backend
 spec:
@@ -15,14 +16,14 @@ spec:
         app: backend
       annotations:
         prometheus.io/scrape: "true"   # Prometheus will scrape this pod
-        prometheus.io/port: "8000"     # Port where metrics are exposed
-        prometheus.io/path: "/metrics" # your backend must expose this endpoint
+        prometheus.io/port: "5000"     # Port where metrics are exposed
+        prometheus.io/path: "/metrics" # Path for metrics
     spec:
       containers:
         - name: backend
           image: sachinbashetti/backend:latest 
           ports:
-            - containerPort: 8000
+            - containerPort: 5000
           resources:
             requests:
               cpu: "100m"
