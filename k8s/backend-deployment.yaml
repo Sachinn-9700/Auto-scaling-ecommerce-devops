@@ -1,12 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-deployment
-  namespace: ecommerce
+  name: backend
   labels:
     app: backend
 spec:
-  replicas: 1
+  replicas: 2 
   selector:
     matchLabels:
       app: backend
@@ -14,29 +13,20 @@ spec:
     metadata:
       labels:
         app: backend
+      annotations:
+        prometheus.io/scrape: "true"   # Prometheus will scrape this pod
+        prometheus.io/port: "8000"     # Port where metrics are exposed
+        prometheus.io/path: "/metrics" # your backend must expose this endpoint
     spec:
       containers:
-      - name: backend
-        image: sachinn9700/ecommerce-backend
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 5000
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 15
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: backend
+          image: sachinbashetti/backend:latest 
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
