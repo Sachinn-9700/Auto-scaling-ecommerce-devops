@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: sachinn9700/ecommerce-frontend:v1
+        image: sachinn9700/ecommerce-frontend
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
 
