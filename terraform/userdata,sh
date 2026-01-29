@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Update system
+apt-get update -y
+apt-get upgrade -y
+
+# Install basic packages
+apt-get install -y   ca-certificates curl gnupg lsb-release software-properties-common git unzip
+
+# Install Docker
+curl -fsSL https://get.docker.com | sh
+
+#start and enable Docker service
+systemctl start docker
+systemctl enable docker
+
+# Add ubuntu and jenkins user to docker group
+usermod -aG docker ubuntu
+usermod -aG docker jenkins || true
+
+# Install OpenJDK 17
+apt-get install -y openjdk-17-jdk
+
+# Install Jenkins
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" \| tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+# Install Jenkins
+apt-get update -y
+apt-get install -y jenkins
+
+# Start and enable Jenkins service
+systemctl start jenkins
+systemctl enable jenkins
+
+# Install kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+rm -f kubectl
+
+# Install AWS CLI v2
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip./aws/install
+rm -rf aws awscliv2.zip
+
+# Log completion
+echo "Jenkins, Docker, kubectl, awscli installed successfully" > /var/log/userdata.log
