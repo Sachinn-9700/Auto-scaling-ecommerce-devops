@@ -34,8 +34,8 @@ pipeline {
         stage('Setup Monitoring') {
             steps {
                 sh '''
-                chmod +x scripts/eks-monitoring-setup.sh
-                ./scripts/eks-monitoring-setup.sh
+                chmod +x eks-monitoring-setup.sh
+                ./eks-monitoring-setup.sh
                 '''
             }
         }
