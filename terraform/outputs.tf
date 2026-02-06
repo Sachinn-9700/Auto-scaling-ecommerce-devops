@@ -1,14 +1,19 @@
 output "jenkins_public_ip" {
-  value = aws_instance.jenkins.public_ip
+  description = "Public IP of Jenkins server"
+  value       = aws_instance.jenkins.public_ip
 }
 
 output "eks_cluster_name" {
-  value = aws_eks_cluster.eks.name
+  description = "EKS cluster name"
+  value       = aws_eks_cluster.eks.name
 }
 
 output "vpc_id" {
-  value = aws_vpc.main.id
+  description = "VPC ID"
+  value       = aws_vpc.main.id
 }
-output "public_subnet_id" {
-  value = aws_subnet.public.id
-} 
+
+output "public_subnet_ids" {
+  description = "List of public subnet IDs"
+  value       = aws_subnet.public[*].id
+}

@@ -2,20 +2,24 @@ pipeline {
     agent any
 
     environment {
-        PATH = "$PATH:/usr/bin/"
+        // Ensure required binaries are reachable
+        PATH = "$PATH:/usr/bin:/usr/local/bin"
 
-        // Git repository URL
+        // Git repository
         GIT_REPO_URL = "https://github.com/Sachinn-9700/Auto-scaling-ecommerce-devops.git"
 
-        // Docker Hub credentials (stored in Jenkins)
+        // Docker Hub token (already confirmed by you)
         DOCKER_HUB_TOKEN = credentials("docker_hub_token")
 
-        // Docker image name
-        BACKEND_IMAGE = "sachinn9700/ecommerce-backend"
+        // Docker images
+        BACKEND_IMAGE  = "sachinn9700/ecommerce-backend"
         FRONTEND_IMAGE = "sachinn9700/ecommerce-frontend"
 
         // Image tag
         TAG = "latest"
+
+        // Kubeconfig path for Jenkins user
+        KUBECONFIG = "/home/jenkins/.kube/config"
     }
 
     stages {
@@ -26,6 +30,17 @@ pipeline {
             }
         }
 
+        // Install / upgrade Prometheus & Grafana on EKS
+        stage('Setup Monitoring') {
+            steps {
+                sh '''
+                chmod +x scripts/eks-monitoring-setup.sh
+                ./scripts/eks-monitoring-setup.sh
+                '''
+            }
+        }
+
+        // Build backend Docker image
         stage('Build Backend Image') {
             steps {
                 sh """
@@ -34,6 +49,7 @@ pipeline {
             }
         }
 
+        // Build frontend Docker image
         stage('Build Frontend Image') {
             steps {
                 sh """
@@ -42,6 +58,7 @@ pipeline {
             }
         }
 
+        // Login to Docker Hub using token
         stage('Docker Hub Login') {
             steps {
                 sh '''
@@ -50,6 +67,7 @@ pipeline {
             }
         }
 
+        // Push backend image
         stage('Push Backend Image') {
             steps {
                 sh """
@@ -58,6 +76,7 @@ pipeline {
             }
         }
 
+        // Push frontend image
         stage('Push Frontend Image') {
             steps {
                 sh """
@@ -66,11 +85,16 @@ pipeline {
             }
         }
 
+        // Deploy manifests to EKS
         stage('Deploy to Kubernetes') {
             steps {
                 sh """
                 kubectl apply -f k8s/namespace.yaml
                 kubectl apply -f k8s/
+
+                // Wait for deployments to become ready
+                kubectl rollout status deployment/backend-deployment -n ecommerce
+                kubectl rollout status deployment/frontend-deployment -n ecommerce
                 """
             }
         }
