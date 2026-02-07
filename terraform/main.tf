@@ -27,4 +27,3 @@ data "aws_ami" "ubuntu_22_04" {
     values = ["hvm"]
   }
 }
-

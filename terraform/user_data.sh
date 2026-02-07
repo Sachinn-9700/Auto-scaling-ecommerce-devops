@@ -56,49 +56,15 @@ apt install -y \
 systemctl enable docker
 systemctl start docker
 
-# Add Jenkins user to Docker group
+# Allow Jenkins to use Docker
 usermod -aG docker jenkins
 systemctl restart docker
 systemctl restart jenkins
 
-# AWS CLI v2
+# AWS CLI installation
 curl -fsSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip
 unzip awscliv2.zip
 ./aws/install
 rm -rf aws awscliv2.zip
 
 aws --version
-
-# kubectl installation
-curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
-  -o /usr/local/bin/kubectl
-chmod +x /usr/local/bin/kubectl
-
-kubectl version --client
-
-# Validate IAM role
-aws sts get-caller-identity
-
-# Jenkins kubeconfig for EKS
-mkdir -p /home/jenkins/.kube
-chown -R jenkins:jenkins /home/jenkins
-
-# Set kubeconfig for Jenkins user
-sudo -u jenkins aws eks update-kubeconfig \
-  --region us-east-1 \
-  --name auto-scaling-ecommerce-eks \
-  --kubeconfig /home/jenkins/.kube/config
-
-chmod 600 /home/jenkins/.kube/config
-chown jenkins:jenkins /home/jenkins/.kube/config
-
-# Verify cluster access (optional)
-sudo -u jenkins kubectl get nodes || true
-
-# Helm installation (Official)
-curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-echo 'export PATH=$PATH:/usr/local/bin' >> /home/jenkins/.bashrc
-chown jenkins:jenkins /home/jenkins/.bashrc
-
-helm version
