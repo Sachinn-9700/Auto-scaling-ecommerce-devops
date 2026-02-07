@@ -1,6 +1,8 @@
 resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
   role_arn = aws_iam_role.eks_cluster_role.arn
+  version  = "1.33"
+
 
   vpc_config {
     subnet_ids = concat(
@@ -15,6 +17,9 @@ resource "aws_eks_cluster" "eks" {
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy
   ]
+  tags = {
+    Name = var.cluster_name
+  }
 }
 
 resource "aws_eks_node_group" "nodes" {
@@ -23,6 +28,7 @@ resource "aws_eks_node_group" "nodes" {
   node_role_arn   = aws_iam_role.eks_node_role.arn
 
   subnet_ids = aws_subnet.private[*].id
+
 
   scaling_config {
     desired_size = var.desired_capacity
@@ -38,4 +44,3 @@ resource "aws_eks_node_group" "nodes" {
     aws_iam_role.eks_node_role
   ]
 }
-
