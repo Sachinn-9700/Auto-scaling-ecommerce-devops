@@ -1,17 +1,16 @@
 # Terraform
-terraform/.terraform/
-terraform/*.tfstate
-terraform/*.tfstate.*
-terraform/*.pem
-terraform/.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
+
+# Keys
+*.pem
 
 # Logs
 *.log
 
-# OS / Editor junk
+# OS / editor
 .DS_Store
 .vscode/
-.idea/
 
-# Secrets
-*.env
+
