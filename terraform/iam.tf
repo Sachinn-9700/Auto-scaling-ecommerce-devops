@@ -14,13 +14,18 @@ resource "aws_iam_role" "eks_cluster_role" {
   })
 }
 
-# Required for EKS to manage cluster resources
+# Attach EKS cluster policies
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   role       = aws_iam_role.eks_cluster_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
-# IAM role assumed by EKS worker nodes (EC2)
+resource "aws_iam_role_policy_attachment" "eks_vpc_cni" {
+  role       = aws_iam_role.eks_cluster_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+}
+
+# IAM role for EKS worker nodes
 resource "aws_iam_role" "eks_node_role" {
   name = "eks-node-role"
 
@@ -36,30 +41,29 @@ resource "aws_iam_role" "eks_node_role" {
   })
 }
 
-# Policies required for worker nodes to join and function in EKS
-resource "aws_iam_role_policy_attachment" "eks_node_policies" {
-  for_each = toset([
-    # Allows nodes to connect to EKS control plane
-    "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
-
-    # Allows pulling container images from ECR
-    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-
-    # Required for pod networking (CNI)
-    "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  ])
-
+# Node policies (explicitly attached)
+resource "aws_iam_role_policy_attachment" "eks_node_worker" {
   role       = aws_iam_role.eks_node_role.name
-  policy_arn = each.value
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 
-# Instance profile for EKS worker nodes
+resource "aws_iam_role_policy_attachment" "eks_node_cni" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_node_registry" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+# Instance profile for nodes
 resource "aws_iam_instance_profile" "eks_node_instance_profile" {
   name = "eks-node-instance-profile"
   role = aws_iam_role.eks_node_role.name
 }
 
-# IAM role assumed by Jenkins EC2 instance
+# IAM role for Jenkins EC2
 resource "aws_iam_role" "jenkins_role" {
   name = "jenkins-ec2-role"
 
@@ -75,25 +79,21 @@ resource "aws_iam_role" "jenkins_role" {
   })
 }
 
-# Allows Jenkins to describe EKS cluster and generate kubeconfig
 resource "aws_iam_role_policy_attachment" "jenkins_eks_access" {
   role       = aws_iam_role.jenkins_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
-# Allows Jenkins to interact with EKS services (kubectl, logs, exec)
 resource "aws_iam_role_policy_attachment" "jenkins_eks_service_access" {
   role       = aws_iam_role.jenkins_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
 }
 
-# Full access retained for CI/CD flexibility (can be reduced later)
 resource "aws_iam_role_policy_attachment" "jenkins_admin_policy" {
   role       = aws_iam_role.jenkins_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
-# Instance profile attached to Jenkins EC2
 resource "aws_iam_instance_profile" "jenkins_instance_profile" {
   name = "jenkins-instance-profile"
   role = aws_iam_role.jenkins_role.name

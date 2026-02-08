@@ -8,7 +8,8 @@ resource "aws_eks_cluster" "eks" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster_policies
+    aws_iam_role_policy_attachment.eks_cluster_policy,
+    aws_iam_role_policy_attachment.eks_vpc_cni
   ]
 }
 
@@ -29,7 +30,20 @@ resource "aws_eks_node_group" "worker_nodes" {
   ami_type       = "AL2023_x86_64_STANDARD"
 
   depends_on = [
-    aws_iam_role_policy_attachment.eks_node_policies,
-    aws_eks_cluster.eks
+    aws_eks_cluster.eks,
+    aws_iam_role_policy_attachment.eks_node_worker,
+    aws_iam_role_policy_attachment.eks_node_cni,
+    aws_iam_role_policy_attachment.eks_node_registry
   ]
+}
+
+# Kubernetes provider
+provider "kubernetes" {
+  host                   = aws_eks_cluster.eks.endpoint
+  cluster_ca_certificate = base64decode(aws_eks_cluster.eks.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.eks.token
+}
+
+data "aws_eks_cluster_auth" "eks" {
+  name = aws_eks_cluster.eks.name
 }

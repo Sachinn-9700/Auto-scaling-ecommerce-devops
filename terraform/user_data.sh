@@ -12,7 +12,7 @@ apt install -y \
   lsb-release \
   software-properties-common \
   apt-transport-https
-
+    
 # Java (Jenkins dependency)
 apt install -y fontconfig openjdk-21-jre
 java -version
@@ -68,3 +68,4 @@ unzip awscliv2.zip
 rm -rf aws awscliv2.zip
 
 aws --version
+
